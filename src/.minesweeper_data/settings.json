@@ -1,0 +1,28 @@
+{
+    "screen_width": 800,
+    "screen_height": 450,
+    "fps": 60,
+    "colors": {
+      "white": [255, 255, 255],
+      "black": [0, 0, 0],
+      "brown": [139, 69, 19],
+      "gray": [192, 192, 192]
+    },
+    "game_settings": {
+      "easy": [8, 8, 10],
+      "intermediate": [16, 16, 40],
+      "hard": [30, 16, 99],
+      "adventure": [30, 25, 150]
+    },
+    "font_size": 36,
+    "sprites": {
+      "covered": "sprites/TileUnknown.png",
+      "pressed": "sprites/TilePressed.png",
+      "flag": "sprites/TileFlag.png",
+      "mine": "sprites/mine.png",
+      "exploded": "sprites/TileExploded.png",
+      "numbers": ["sprites/TileEmpty.png", "sprites/Tile1.png", "sprites/Tile2.png", "sprites/Tile3.png", "sprites/Tile4.png", "sprites/Tile5.png", "sprites/Tile6.png", "sprites/Tile7.png", "sprites/Tile8.png"],
+      "truth": ["sprites/TileNotMine.png", "sprites/TileMine.png"],
+      "doa": ["sprites/alive.png", "sprites/dead.png"]
+    }
+  }

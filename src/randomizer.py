@@ -1,1 +1,0 @@
-# Randomly reset mine positions after n clicks.
