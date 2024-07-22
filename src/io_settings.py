@@ -1,5 +1,6 @@
 import json
 import os
+import pygame
 
 # (Private) Hidden directory to store settings and data
 _HIDDEN_DIR = os.path.join("./", ".minesweeper_data")
@@ -30,11 +31,10 @@ savedgame = load_json("savedgame")
 
 # Function to load sprites
 def load_sprites(settings):
-    import pygame
     sprites = {}
     for key, path in settings['sprites'].items():
         if isinstance(path, list):
-            sprites[key] = [pygame.image.load(p) for p in path]
+            sprites[key] = [pygame.transform.scale(pygame.image.load(p), (32,32)) for p in path]
         else:
-            sprites[key] = pygame.image.load(path)
+            sprites[key] = pygame.transform.scale(pygame.image.load(path), (32,32))
     return sprites
