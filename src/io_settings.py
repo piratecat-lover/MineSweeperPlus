@@ -16,6 +16,8 @@ def make_folder():
 
 # (Public) Function to load game data from json file
 def load_json(file_name):
+    if file_name.startswith("self."):
+        file_name = file_name[5:]
     '''Load JSON data from a file.'''
     if not os.path.exists(os.path.join(_HIDDEN_DIR, f"{file_name}.json")):
         return {}
@@ -26,5 +28,7 @@ def load_json(file_name):
 # (Public) Function to save game data to json file
 def save_json(file_name, data):
     '''Save JSON data to a file.'''
+    if file_name.startswith("self."):
+        file_name = file_name[5:]
     with open(os.path.join(_HIDDEN_DIR, f"{file_name}.json"), 'w') as file:
         json.dump(data, file, indent=4)

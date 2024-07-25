@@ -1,3 +1,5 @@
+# game_manager.py
+
 import pygame
 import sys
 from game_functions import GameContainer, Board
@@ -15,11 +17,11 @@ def load_sprites(settings):
 class DisplayBoard(Board):
     def __init__(self, rows, cols, mines):
         super().__init__(rows, cols, mines)
-        super().new_game()
         self.settings = load_json("settings")
         self.sprites = load_sprites(self.settings)
         self.TILESIZE = 32
         self.HEADERSIZE = 60
+        super().new_game()
         self.SCREEN_WIDTH = self.cols * self.TILESIZE
         self.SCREEN_HEIGHT = self.rows * self.TILESIZE + self.HEADERSIZE
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -28,7 +30,6 @@ class DisplayBoard(Board):
         self.clock = pygame.time.Clock()
 
     def display(self):
-        self.screen.fill(self.settings['colors']['white'])
         self.draw_board()
         pygame.display.flip()
         self.clock.tick(self.settings['fps'])
@@ -88,8 +89,9 @@ class DisplayGameContainer(GameContainer):
         self.dboard.screen.blit(mine_count_text, (self.dboard.SCREEN_WIDTH // 2 + 20, 10))
     
     def display(self):
-        self.dboard.display()
+        self.dboard.screen.fill(self.settings['colors']['white'])
         self.draw_header()
+        self.dboard.display()
     
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -105,13 +107,16 @@ class DisplayGameContainer(GameContainer):
                     if result == "Game Over":
                         self.dboard.game_over = True
                         self.display_game_over()
+                    elif self.dboard.valid_clicks >= 10:
+                        self.dboard.reset_board((pygame.time.get_ticks() - self.start_time) // 1000, "ratio")
                     elif self.dboard.check_win():
                         self.dboard.game_over = True
                         self.display_win()
                 elif event.button == 3:  # Right click
                     self.dboard.right_click(x, y)
                 elif event.button == 2:  # Middle click (Mouse wheel button)
-                    self.dboard.middle_click(x, y)
+                    if not self.dboard.board_list[x][y].flagged:  # Prevent middle click from revealing flagged tiles
+                        self.dboard.middle_click(x, y)
     
     def display_game_over(self):
         game_over_text = self.dboard.font.render("Game Over", True, self.dboard.settings['colors']['black'])

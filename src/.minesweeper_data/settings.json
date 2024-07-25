@@ -11,10 +11,10 @@
     "game_settings": {
       "easy": [8, 8, 10],
       "intermediate": [16, 16, 40],
-      "hard": [30, 16, 99],
-      "adventure": [30, 25, 130]
+      "hard": [16, 30, 99],
+      "adventure": [25, 30, 130]
     },
-    "font_size": 36,
+    "font_size": 18,
     "sprites": {
       "covered": "sprites/TileUnknown.png",
       "pressed": "sprites/TilePressed.png",

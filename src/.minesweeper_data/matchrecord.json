@@ -1,8 +1,26 @@
 {
     "easy": {
-        "games_played": 6,
-        "games_won": 0,
-        "games_lost": 6,
-        "win_rate": 0.0
+        "games_played": "----",
+        "games_won": "----",
+        "games_lost": "----",
+        "win_rate": "----"
+    },
+    "intermediate": {
+        "games_played": "----",
+        "games_won": "----",
+        "games_lost": "----",
+        "win_rate": "----"
+    },
+    "hard": {
+        "games_played": "----",
+        "games_won": "----",
+        "games_lost": "----",
+        "win_rate": "----"
+    },
+    "adventure": {
+        "games_played": "----",
+        "games_won": "----",
+        "games_lost": "----",
+        "win_rate": "----"
     }
 }

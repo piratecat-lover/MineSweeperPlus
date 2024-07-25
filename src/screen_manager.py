@@ -239,10 +239,10 @@ class SettingsScreen(ScreenManager):
 
     def erase_match_record(self):
         default_matchrecord = {
-            "easy": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"},
-            "intermediate": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"},
-            "hard": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"},
-            "adventure": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"}
+            "easy": {"games_played": 0, "games_won": 0, "games_lost": 0, "win_rate": 0},
+            "intermediate": {"games_played": 0, "games_won": 0, "games_lost": 0, "win_rate": 0},
+            "hard": {"games_played": 0, "games_won": 0, "games_lost": 0, "win_rate": 0},
+            "adventure": {"games_played": 0, "games_won": 0, "games_lost": 0, "win_rate": 0}
         }
         save_json("matchrecord", default_matchrecord)
         print("Match record erased")
