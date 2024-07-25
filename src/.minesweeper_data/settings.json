@@ -12,7 +12,7 @@
       "easy": [8, 8, 10],
       "intermediate": [16, 16, 40],
       "hard": [30, 16, 99],
-      "adventure": [30, 25, 150]
+      "adventure": [30, 25, 130]
     },
     "font_size": 36,
     "sprites": {

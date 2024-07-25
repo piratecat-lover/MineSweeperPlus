@@ -1,7 +1,7 @@
 import pygame
 import sys
-from io_settings import matchrecord, savedgame, save_json, load_sprites
-from game_manager import GameScreenManager
+from game_manager import DisplayGameContainer, load_sprites
+from io_settings import load_json, save_json
 
 class ScreenManager:
     def __init__(self, screen, font, settings, set_current_screen):
@@ -18,7 +18,7 @@ class ScreenManager:
         textrect = textobj.get_rect(center=(screen_width // 2, y))
         self.screen.blit(textobj, textrect)
 
-    def save_and_quit(self):
+    def save_and_quit(self, savedgame):
         save_json("savedgame", savedgame)
         pygame.quit()
         sys.exit()
@@ -39,8 +39,7 @@ class TitleScreen(ScreenManager):
             if event.key == pygame.K_1:
                 self.set_current_screen('new_game')
             elif event.key == pygame.K_2:
-                if savedgame:
-                    self.set_current_screen(GameScreenManager(savedgame['difficulty'], savedgame['player_name']))
+                self.set_current_screen('continue_game')
             elif event.key == pygame.K_3:
                 self.set_current_screen('leaderboard')
             elif event.key == pygame.K_4:
@@ -48,15 +47,62 @@ class TitleScreen(ScreenManager):
             elif event.key == pygame.K_5:
                 self.set_current_screen('tutorial')
             elif event.key == pygame.K_6:
-                self.save_and_quit()
+                pygame.quit()
+                sys.exit()
+
+class ContinueGameScreen(ScreenManager):
+    def __init__(self, screen, font, settings, set_current_screen, popup_manager):
+        super().__init__(screen, font, settings, set_current_screen)
+        self.popup_manager = popup_manager
+        self.showing_popup = False
+
+    def display(self):
+        self.screen.fill(self.settings['colors']['white'])
+        self.draw_text('Select Difficulty to Continue', 0.1, self.settings['colors']['black'])
+        self.draw_text('1. Easy', 0.2, self.settings['colors']['black'])
+        self.draw_text('2. Intermediate', 0.3, self.settings['colors']['black'])
+        self.draw_text('3. Hard', 0.4, self.settings['colors']['black'])
+        self.draw_text('4. Adventure', 0.5, self.settings['colors']['black'])
+        self.draw_text('5. Back', 0.6, self.settings['colors']['black'])
+        if self.showing_popup:
+            self.popup_manager.draw_popup("No saved game found!", ["BACK"])
+
+    def handle_event(self, event):
+        if self.showing_popup:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
+                self.showing_popup = False
+        else:
+            if event.type == pygame.KEYDOWN:
+                savedgame = load_json("savedgame")
+                if event.key == pygame.K_1:
+                    if savedgame.get('easy'):
+                        self.set_current_screen(DisplayGameContainer('easy'))
+                    else:
+                        self.showing_popup = True
+                elif event.key == pygame.K_2:
+                    if savedgame.get('intermediate'):
+                        self.set_current_screen(DisplayGameContainer('intermediate'))
+                    else:
+                        self.showing_popup = True
+                elif event.key == pygame.K_3:
+                    if savedgame.get('hard'):
+                        self.set_current_screen(DisplayGameContainer('hard'))
+                    else:
+                        self.showing_popup = True
+                elif event.key == pygame.K_4:
+                    if savedgame.get('adventure'):
+                        self.set_current_screen(DisplayGameContainer('adventure'))
+                    else:
+                        self.showing_popup = True
+                elif event.key == pygame.K_5:
+                    self.set_current_screen('title')
 
 class NewGameScreen(ScreenManager):
-    def __init__(self, screen, font, settings, set_current_screen, popup_manager, sprites):
+    def __init__(self, screen, font, settings, set_current_screen, popup_manager):
         super().__init__(screen, font, settings, set_current_screen)
         self.popup_manager = popup_manager
         self.showing_popup = False
         self.difficulty = None
-        self.sprites = sprites
 
     def display(self):
         self.screen.fill(self.settings['colors']['white'])
@@ -92,20 +138,18 @@ class NewGameScreen(ScreenManager):
                     self.set_current_screen('title')
 
     def start_game(self, difficulty):
-        self.set_current_screen(GameScreenManager(difficulty, "Player"))
+        self.set_current_screen(DisplayGameContainer(difficulty))
 
     def show_adventure_warning(self):
         self.showing_popup = True
-
 
 class SettingsScreen(ScreenManager):
     def __init__(self, screen, font, settings, set_current_screen, popup_manager):
         super().__init__(screen, font, settings, set_current_screen)
         self.popup_manager = popup_manager
-        self.volume = 0.5  # Default volume
+        self.volume = 0.5
         self.showing_popup = False
         self.popup_message = ""
-        self.popup_options = []
 
     def display(self):
         self.screen.fill(self.settings['colors']['white'])
@@ -120,15 +164,6 @@ class SettingsScreen(ScreenManager):
             self.draw_text('4. Quit', 0.6, self.settings['colors']['black'])
             self.draw_text('5. Back', 0.7, self.settings['colors']['black'])
 
-            # Display match record
-            self.draw_text('Match Record:', 0.75, self.settings['colors']['black'])
-            for i, (difficulty, record) in enumerate(matchrecord.items()):
-                self.draw_text(
-                    f"{difficulty.capitalize()}: Played: {record['games_played']}, Won: {record['games_won']}, Lost: {record['games_lost']}, Win rate: {record['win_rate']}%",
-                    0.8 + 0.05 * i,
-                    self.settings['colors']['black']
-                )
-
     def draw_volume_slider(self, y_ratio):
         screen_width, screen_height = self.screen.get_size()
         y = int(screen_height * y_ratio)
@@ -137,9 +172,7 @@ class SettingsScreen(ScreenManager):
         slider_x = (screen_width - slider_width) // 2
         slider_y = y - slider_height // 2
 
-        # Draw the slider background
         pygame.draw.rect(self.screen, self.settings['colors']['gray'], (slider_x, slider_y, slider_width, slider_height))
-        # Draw the slider foreground
         volume_width = int(slider_width * self.volume)
         pygame.draw.rect(self.screen, self.settings['colors']['black'], (slider_x, slider_y, volume_width, slider_height))
 
@@ -171,7 +204,7 @@ class SettingsScreen(ScreenManager):
 
         if slider_x <= pos[0] <= slider_x + slider_width and slider_y <= pos[1] <= slider_y + 20:
             self.volume = (pos[0] - slider_x) / slider_width
-            pygame.mixer.music.set_volume(self.volume)  # Update the game volume
+            pygame.mixer.music.set_volume(self.volume)
 
     def show_reset_leaderboard_warning(self):
         self.popup_message = "Warning: Resetting leaderboard!"
@@ -191,29 +224,42 @@ class SettingsScreen(ScreenManager):
         elif "Erasing match record!" in self.popup_message:
             self.erase_match_record()
         elif "Game state will be saved automatically!" in self.popup_message:
-            self.save_and_quit()
+            self.save_and_quit({})
         self.showing_popup = False
 
     def reset_leaderboard(self):
-        save_json("leaderboard", {})
+        default_leaderboard = {
+            "easy": [{"name": "----", "time": "----"} for _ in range(5)],
+            "intermediate": [{"name": "----", "time": "----"} for _ in range(5)],
+            "hard": [{"name": "----", "time": "----"} for _ in range(5)],
+            "adventure": [{"name": "----", "time": "----"} for _ in range(5)]
+        }
+        save_json("leaderboard", default_leaderboard)
         print("Leaderboard reset")
 
     def erase_match_record(self):
-        save_json("matchrecord", {})
+        default_matchrecord = {
+            "easy": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"},
+            "intermediate": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"},
+            "hard": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"},
+            "adventure": {"games_played": "----", "games_won": "----", "games_lost": "----", "win_rate": "----"}
+        }
+        save_json("matchrecord", default_matchrecord)
         print("Match record erased")
 
+
 class LeaderboardScreen(ScreenManager):
-    def __init__(self, screen, font, settings, leaderboard, set_current_screen):
+    def __init__(self, screen, font, settings, set_current_screen):
         super().__init__(screen, font, settings, set_current_screen)
-        self.leaderboard = leaderboard if leaderboard else {}
+        self.leaderboard = load_json("leaderboard")
 
     def display(self):
         self.screen.fill(self.settings['colors']['white'])
         self.draw_text('Leaderboard', 0.1, self.settings['colors']['black'])
-        difficulties = ['Easy', 'Intermediate', 'Hard', 'Adventure']
+        difficulties = ['easy', 'intermediate', 'hard', 'adventure']
         for i, difficulty in enumerate(difficulties):
-            self.draw_text(f'{difficulty}:', 0.2 + i * 0.15, self.settings['colors']['black'])
-            scores = self.leaderboard.get(difficulty.lower(), [])
+            self.draw_text(f'{difficulty.capitalize()}:', 0.2 + i * 0.15, self.settings['colors']['black'])
+            scores = self.leaderboard.get(difficulty, [])
             for j in range(5):
                 if j < len(scores):
                     score = scores[j]
@@ -226,7 +272,6 @@ class LeaderboardScreen(ScreenManager):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_4:
                 self.set_current_screen('title')
-
 class TutorialScreen(ScreenManager):
     def __init__(self, screen, font, settings, set_current_screen):
         super().__init__(screen, font, settings, set_current_screen)

@@ -1,15 +1,20 @@
+# Description: Module to save/load settings and data to/from json files.
+# Chief contributor: SS Lee
+
+# Import packages
 import json
 import os
-import pygame
 
 # (Private) Hidden directory to store settings and data
 _HIDDEN_DIR = os.path.join("./", ".minesweeper_data")
 
-# Ensure hidden directory exists
-if not os.path.exists(_HIDDEN_DIR):
-    os.makedirs(_HIDDEN_DIR)
+# (Public) Function to create hidden settings directory if it does not exist
+def make_folder():
+    '''Create a hidden folder to store settings and data.'''
+    if not os.path.exists(_HIDDEN_DIR):
+        os.makedirs(_HIDDEN_DIR)
 
-# Functions to load and save gamefiles to json
+# (Public) Function to load game data from json file
 def load_json(file_name):
     '''Load JSON data from a file.'''
     if not os.path.exists(os.path.join(_HIDDEN_DIR, f"{file_name}.json")):
@@ -18,23 +23,8 @@ def load_json(file_name):
         data = json.load(file)
     return data
 
+# (Public) Function to save game data to json file
 def save_json(file_name, data):
     '''Save JSON data to a file.'''
     with open(os.path.join(_HIDDEN_DIR, f"{file_name}.json"), 'w') as file:
         json.dump(data, file, indent=4)
-
-# (Public) Variables storing game settings and data
-settings = load_json("settings")
-leaderboard = load_json("leaderboard")
-matchrecord = load_json("matchrecord")
-savedgame = load_json("savedgame")
-
-# Function to load sprites
-def load_sprites(settings):
-    sprites = {}
-    for key, path in settings['sprites'].items():
-        if isinstance(path, list):
-            sprites[key] = [pygame.transform.scale(pygame.image.load(p), (32,32)) for p in path]
-        else:
-            sprites[key] = pygame.transform.scale(pygame.image.load(path), (32,32))
-    return sprites
