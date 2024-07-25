@@ -209,7 +209,7 @@ class GameContainer:
                 'win_rate': 0
             }
         for val in difficulty_record.values():
-            if type(val) != int:
+            if type(val) != int and val !="---":
                 val == int(val)
         difficulty_record['games_played'] += 1
         if result:
